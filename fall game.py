@@ -1,43 +1,57 @@
 from microbit import *
+from time import sleep
 
 class Player:
 	def __init__(self, app_self):
 		self.app_self = app_self
-		self.pos = {"x":4, "y": 3}
-		self.move = True
+		self.pos = {"x":4, "y": 3, "width": 1, "height": 1}
+		self.skin = 9
 
 	def loop(self):
-		if button_a.is_pressed() and self.move:
+		if button_a.is_pressed():
 			self.pos["x"] -= 1
-			display.scroll(self.pos["x"])
-			self.move = False
-		elif button_b.is_pressed() and self.move:
+			sleep(.5)
+
+		elif button_b.is_pressed():
 			self.pos["x"] += 1
-			self.move = False
-		else:
-		    self.move = True
+			sleep(.5)
+		self.build()
+	
+	def build(self):
+       		self.app_self.display[self.pos["x"]*self.pos["y"]] = self.skin
 
-		lines = self.player_line(self.app_self.bg)
-		self.app_self.bg = lines
-
-	def player_line(self, line):
-		line[self.pos["x"]*self.pos["y"]] = 9
-		return line
+class Wall:
+    def __init__(self, app_self):
+        self.app_self = app_self
+        self.app_self.walls.append(self)
+        self.pos = {"x": 2, "y": 3, "width": 2, "height": 2}
+        
+    def loop(self):
+        self.build()
+        
+    def build(self):
+        self.app_self.display[self.pos["x"]*self.pos["y"]] = self.skin
+        
 
 class Main:
 	def __init__(self):
-		self.score = 0
 		self.player = Player(self)
-		self.bg_update()
-		self.loop()
+		self.walls = []
+		self.run = True
+		
+		self.main()
 
-	def loop(self):
-		while True:
-			self.bg_update()
+	def main(self):
+		while self.run:
 			self.player.loop()
-			display.show(Image(5, 5, bytearray(self.bg)))
+			
+			for wall in self.walls:
+			    wall.loop()
+			
+			self.display_update()
 
-	def bg_update(self):
-		self.bg = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+	def display_update(self):
+		self.display = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+		display.show(Image(5, 5, bytearray(self.display)))
 
 main = Main()
